@@ -13,38 +13,38 @@ class LockControlScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Rolling Code Lock (Classic)'),
+        title: const Text('Simple BT Lock (Classic)'), // Updated title
         actions: [
           // Refresh / Load Paired Devices Button
           Obx(
             () => IconButton(
-              icon:
-                  (lockController.isLoading.value && !lockController.isScanning.value) // Show spinner only for non-scan loading
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.refresh),
-              onPressed:
-                  (lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value || lockController.isScanning.value)
-                      ? null // Disable if busy, connecting, connected or scanning
-                      : lockController.getPairedDevices,
+              icon: (lockController.isLoading.value && !lockController.isScanning.value)
+                  ? const SizedBox(
+                    width: 20, height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  )
+                  : const Icon(Icons.refresh),
+              onPressed: (lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value || lockController.isScanning.value)
+                  ? null
+                  : lockController.getPairedDevices,
               tooltip: lockController.isConnected.value ? "Connected" : (lockController.isLoading.value || lockController.isConnecting.value || lockController.isScanning.value ? "Busy..." : "Load Paired Devices"),
             ),
           ),
           // Scan Button
-          Obx(
-            () => IconButton(
-              icon:
-                  lockController
-                          .isScanning
-                          .value // Show spinner if scanning
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Icon(Icons.bluetooth_searching),
-              onPressed:
-                  (lockController.isScanning.value || lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value)
-                      ? null // Disable if busy
-                      : lockController.startScan, // Trigger scan
-              tooltip: lockController.isScanning.value ? "Scanning..." : (lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value ? "Busy..." : "Scan for Devices"),
-            ),
-          ),
+           Obx(
+             () => IconButton(
+               icon: lockController.isScanning.value
+                   ? const SizedBox(
+                     width: 20, height: 20,
+                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                   )
+                   : const Icon(Icons.bluetooth_searching),
+               onPressed: (lockController.isScanning.value || lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value)
+                   ? null
+                   : lockController.startScan,
+               tooltip: lockController.isScanning.value ? "Scanning..." : (lockController.isLoading.value || lockController.isConnecting.value || lockController.isConnected.value ? "Busy..." : "Scan for Devices"),
+             ),
+           ),
         ],
       ),
       body: Obx(
@@ -60,14 +60,23 @@ class LockControlScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Show generic loading/connecting indicator
-                      if (lockController.isLoading.value || lockController.isConnecting.value || lockController.isScanning.value) Padding(padding: const EdgeInsets.only(bottom: 8.0), child: Row(children: [const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)), const SizedBox(width: 8), Text(lockController.isConnecting.value ? "Connecting..." : (lockController.isScanning.value ? "Scanning..." : "Loading..."))])),
+                      if (lockController.isLoading.value || lockController.isConnecting.value || lockController.isScanning.value)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8.0),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+                              const SizedBox(width: 8),
+                              Text(lockController.isConnecting.value ? "Connecting..." : (lockController.isScanning.value ? "Scanning..." :"Loading..."))
+                            ]
+                          )
+                        ),
                       Text("Status: ${lockController.statusMessage.value}", style: Theme.of(context).textTheme.titleMedium),
                       const SizedBox(height: 4),
                       Text("Device: ${lockController.connectedDevice.value?.name ?? lockController.connectedDevice.value?.address ?? 'None'}"),
-                      const SizedBox(height: 4),
-                      Text("Next Counter: ${lockController.syncCounter.value}"),
-                      // Show last response only if not connected (avoid flicker during active comms)
+                      // Removed Counter Display
+                      // const SizedBox(height: 4),
+                      // Text("Next Counter: ${lockController.syncCounter.value}"),
                       if (lockController.receivedData.value.isNotEmpty && !lockController.isConnected.value) ...[const SizedBox(height: 4), const Divider(), Text("Last Response: ${lockController.receivedData.value}")],
                     ],
                   ),
@@ -79,27 +88,28 @@ class LockControlScreen extends StatelessWidget {
               ElevatedButton.icon(
                 icon: const Icon(Icons.lock_open_outlined),
                 label: const Text('Toggle Lock'),
-                // Enable button only when connected
                 onPressed: lockController.isConnected.value ? lockController.sendToggleCommand : null,
               ),
               const SizedBox(height: 10),
 
-              // Disconnect Button - Shown only when connected or connecting
+              // Disconnect Button
               if (lockController.isConnected.value || lockController.isConnecting.value)
                 OutlinedButton(
-                  onPressed: lockController.disconnectDevice, // disconnect handles both connected/connecting
+                  onPressed: lockController.disconnectDevice,
                   child: const Text('Disconnect'),
                 ),
 
-              // Show device list only if *not* connected and *not* currently connecting
+              // Device List
               if (!lockController.isConnected.value && !lockController.isConnecting.value) ...[
                 const Divider(height: 30, thickness: 1),
                 Text(lockController.isScanning.value ? "Scanning Results:" : "Paired Devices:", style: Theme.of(context).textTheme.titleSmall),
-                Expanded(child: _buildDeviceList(lockController, context)),
+                Expanded(
+                  child: _buildDeviceList(lockController, context),
+                ),
               ] else if (lockController.isConnecting.value) ...[
                 const Expanded(child: Center(child: Text("Connecting... Please Wait"))),
               ] else if (lockController.isConnected.value) ...[
-                const Spacer(), // Takes up space when connected
+                const Spacer(),
               ],
             ],
           ),
@@ -110,42 +120,42 @@ class LockControlScreen extends StatelessWidget {
 
   // Helper widget to build the device list
   Widget _buildDeviceList(LockController lockController, BuildContext context) {
-    // Obx monitors changes in availableDevices and other states impacting the list
     return Obx(() {
-      // Show message if loading/scanning AND list is empty
       if ((lockController.isLoading.value || lockController.isScanning.value) && lockController.availableDevices.isEmpty) {
         return Center(child: Text(lockController.isScanning.value ? "Scanning..." : "Loading paired devices..."));
       }
-      // Show message if finished loading/scanning but list is still empty
       else if (!lockController.isLoading.value && !lockController.isScanning.value && lockController.availableDevices.isEmpty) {
-        return Center(child: Padding(padding: const EdgeInsets.all(16.0), child: Text("No devices found.\nLoad paired devices (refresh icon) or scan (search icon).\nEnsure '${lockController.targetDeviceName}' is paired in Bluetooth settings.", textAlign: TextAlign.center, style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]))));
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text(
+              "No devices found.\nLoad paired devices (refresh icon) or scan (search icon).\nEnsure '${lockController.targetDeviceName}' is paired in Bluetooth settings.",
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+            ),
+          ),
+        );
       }
-      // Build the list if devices are available
       else {
         return ListView.builder(
           itemCount: lockController.availableDevices.length,
           itemBuilder: (context, index) {
-            // Use Device model from bluetooth_classic
             final Device device = lockController.availableDevices[index];
             String deviceName = device.name ?? "Unknown Device";
-            // Check name for target device
             bool isTargetDevice = deviceName.contains(lockController.targetDeviceName);
-            // Determine if this specific device in the list is the currently connected one
             bool isCurrentlyConnected = device.address == lockController.connectedDevice.value?.address;
 
             return ListTile(
               title: Text(deviceName),
               subtitle: Text(device.address),
               leading: Icon(
-                // Show connected icon if this is the connected device,
-                // otherwise show target icon or generic bluetooth icon
-                isCurrentlyConnected ? Icons.bluetooth_connected : (isTargetDevice ? Icons.memory : Icons.bluetooth),
-                color: isCurrentlyConnected ? Colors.blue : (isTargetDevice ? Theme.of(context).primaryColor : null),
+                isCurrentlyConnected ? Icons.bluetooth_connected
+                    : (isTargetDevice ? Icons.memory : Icons.bluetooth),
+                color: isCurrentlyConnected ? Colors.blue
+                    : (isTargetDevice ? Theme.of(context).primaryColor : null),
               ),
-              // Show checkmark if this is the connected device
               trailing: isCurrentlyConnected ? const Icon(Icons.check_circle, color: Colors.green) : null,
               onTap: () => lockController.connectToDevice(device),
-              // Enable tap only if not busy (loading, scanning, connecting, connected)
               enabled: !lockController.isLoading.value && !lockController.isScanning.value && !lockController.isConnecting.value && !lockController.isConnected.value,
             );
           },
