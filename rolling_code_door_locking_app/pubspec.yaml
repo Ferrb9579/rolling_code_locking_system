@@ -10,11 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  shared_preferences: ^2.5.3 # Re-added for counter persistence
   permission_handler: ^11.4.0 # Use locked version 11.4.0
   get: ^4.7.2 # Use locked version 4.7.2
-  # crypto: ^5.0.3 # Removed - Crypto system removed
-  # flutter_secure_storage: ^9.2.2 # Removed - Crypto system removed
+  crypto: ^3.0.6 # Re-added (dependency for OTP, good practice)
+  flutter_secure_storage: ^9.2.2 # Re-added for secure key storage
   bluetooth_classic: ^0.0.3 # Keep bluetooth_classic
+  otp: ^3.1.4 # Added for HOTP code generation
 
 dev_dependencies:
   flutter_test:
