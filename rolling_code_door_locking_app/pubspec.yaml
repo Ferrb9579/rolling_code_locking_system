@@ -1,0 +1,23 @@
+name: rolling_code_door_locking_app
+description: "A new Flutter project."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.7.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_blue_plus: ^1.15.9 # Check pub.dev for the latest version
+  shared_preferences: ^2.2.3 # Check pub.dev for the latest version
+  permission_handler: ^11.3.1 # Check pub.dev for the latest version
+  get: ^4.6.6 # Check pub.dev for the latest version (GetX core)
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
